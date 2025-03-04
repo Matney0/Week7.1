@@ -1,8 +1,10 @@
-﻿using System;
-using System.IO;
-using System.Xml;
-using Newtonsoft.Json;
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using static JsonSerializerHelper.JsonConvert;  
 public class Book
 {
     public string Title { get; set; }
@@ -17,44 +19,23 @@ public class Book
         Year = year;
     }
 }
-
+// Helper class to serialize and deserialize a book object
 public class JsonSerializerHelper
 {
-    // Method to serialize a Book object to JSON and save it in a file
-    public static void SerializeToJson(string fileName, Book book)
+    public class JsonConvert
     {
-        try
+        public static string SerializeObject(Book book)
         {
-            //Serialize the book object to a JSON string
-            string json = JsonConvert.SerializeObject(book);
-
-            // Write the JSON string to the specified file
-            File.WriteAllText(fileName, json);
-            Console.WriteLine($"Book details serialized and saved to {fileName}");
+            return $"{{\"Title\":\"{book.Title}\",\"Author\":\"{book.Author}\",\"Year\":{book.Year}}}";
         }
-        catch (Exception ex)
+        public static Book DeserializeObject(string json)
         {
-            Console.WriteLine($"Error while serializing the book: {ex.Message}");
-        }
-    }
-
-    // Method to deserialize the JSON file back into a Book object
-    public static Book DeserializeFromJson(string fileName)
-    {
-        try
-        {
-            // Read the JSON string from the file
-            string json = File.ReadAllText(fileName);
-
-            // Deserialize the JSON string back into a Book object
-            Book book = JsonConvert.DeserializeObject<Book>(json);
-            Console.WriteLine("Book details deserialized successfully.");
-            return book;
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"Error while deserializing the book: {ex.Message}");
-            return null;
+            //get the parts of the json string
+            string[] parts = json.Split(',');
+            string title = parts[0].Split(':')[1].Trim('"');
+            string author = parts[1].Split(':')[1].Trim('"');
+            int year = int.Parse(parts[2].Split(':')[1]);
+            return new Book(title, author, year);
         }
     }
 }
@@ -72,10 +53,10 @@ class Program
         // Serialize the book object to a JSON file
         JsonSerializerHelper.SerializeToJson(fileName, myBook);
 
-        // Deserialize the book object from the JSON file
+        // Deserialize the book 
         Book deserializedBook = JsonSerializerHelper.DeserializeFromJson(fileName);
 
-        // Display the deserialized book details
+        // Display book details
         if (deserializedBook != null)
         {
             Console.WriteLine($"Book Title: {deserializedBook.Title}");
@@ -84,3 +65,4 @@ class Program
         }
     }
 }
+
